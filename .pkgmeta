@@ -1,0 +1,6 @@
+package-as: Talentwarden
+
+ignore:
+  - README.md
+  - docs
+  - CHANGELOG.md

@@ -1,0 +1,18 @@
+## Interface: 16001
+## Title: |cffffcc00Talentwarden|r
+## Notes: Tells you where to spend your next talent point, from level-by-level talent guides and endgame builds for every class and spec. Glows the talent in the talent window, warns when you go off the build, and keeps builds of your own.
+## Author: David
+## Version: @project-version@
+## X-License: MIT
+## Category: Character
+## IconTexture: Interface\AddOns\Talentwarden\Media\Icon
+## AddonCompartmentFunc: Talentwarden_OnAddonCompartmentClick
+## SavedVariables: TalentwardenDB
+
+Core.lua
+Look.lua
+LookSetup.lua
+DataA.lua
+DataB.lua
+Engine.lua
+UI.lua
