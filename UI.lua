@@ -172,6 +172,25 @@ function UI.Highlight()
     if not res or res.foreign then return end
     if ns.db.glowOnlyUnspent and (res.unspent or 0) <= 0 then return end
     local want = E.Upcoming(res, math.max(1, math.floor(ns.db.glowCount or 1)))
+    -- everything reset: glow the whole plan (as many points as you can spend) and show how many points each talent gets
+    local overview = false
+    if ns.db.glowAllOnReset ~= false and res.owned and res.owned.ok and (res.owned.total or 0) == 0 then
+        local cap = tonumber(res.unspent) or 0
+        if cap <= 0 then cap = #res.rows end
+        local byKey, list = {}, {}
+        for i = 1, math.min(cap, #res.rows) do
+            local step = res.rows[i].step
+            local k = E.Norm(step.name)
+            local w = byKey[k]
+            if not w then
+                w = { step = step, order = #list + 1, pts = 0 }
+                byKey[k] = w
+                list[#list + 1] = w
+            end
+            w.pts = w.pts + 1
+        end
+        if #list > 0 then want, overview = list, true end
+    end
     if #want == 0 then return end
     scanned = { roots = {}, buttons = 0, matched = 0 }
     for _, rn in ipairs(ROOT_NAMES) do
@@ -193,11 +212,15 @@ function UI.Highlight()
                                 g:SetSize(size, size)
                                 local r, gg, b = GlowColor()
                                 g:SetVertexColor(r, gg, b)
-                                g:SetAlpha(w.order == 1 and 1 or 0.65)
+                                g:SetAlpha((overview or w.order == 1) and 1 or 0.65)
                                 g:Show()
                                 if g.anim then g.anim:SetDuration(math.max(0.2, ns.db.glowSpeed or 0.7)) end
                                 if ns.db.glowPulse then g.pulse:Play() else g.pulse:Stop() end
-                                if ns.db.glowNumbers and #want > 1 then
+                                if overview then
+                                    g.num:SetText(tostring(w.pts))
+                                    g.num:SetTextColor(1, 1, 1)
+                                    g.num:Show()
+                                elseif ns.db.glowNumbers and #want > 1 then
                                     g.num:SetText(tostring(w.order))
                                     g.num:SetTextColor(r, gg, b)
                                     g.num:Show()

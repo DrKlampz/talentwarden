@@ -26,6 +26,7 @@ ns.DEFAULTS = {
     glowSpeed = 0.7,        -- seconds for one pulse
     glowCount = 1,          -- how many of the next talents glow
     glowOnlyUnspent = false, -- only glow while you have a point to spend
+    glowAllOnReset = true,  -- with every talent reset, glow the whole plan and number each talent with the points it should get
     glowNumbers = false,    -- put the step order on the glowing talents (1 = next, 2 = after that, ...)
     remind = true,          -- chat line when you have points to spend
     remindLogin = true,
