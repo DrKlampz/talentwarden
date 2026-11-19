@@ -61,7 +61,10 @@ function ns.AddHook(name, fn) hooks[name] = hooks[name] or {} table.insert(hooks
 function ns.Fire(name, ...)
     for _, fn in ipairs(hooks[name] or {}) do
         local ok, err = pcall(fn, ...)
-        if not ok then ns.Print("|cffff5555error in " .. name .. ":|r " .. tostring(err)) end
+        if not ok then
+            if ns.Issue then pcall(ns.Issue, "lua", name, tostring(err)) end
+            ns.Print("|cffff5555error in " .. name .. ":|r " .. tostring(err))
+        end
     end
 end
 

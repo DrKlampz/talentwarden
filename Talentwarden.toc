@@ -12,6 +12,7 @@
 ## SavedVariables: TalentwardenDB
 
 Core.lua
+IssueLog.lua
 Look.lua
 LookSetup.lua
 DataA.lua

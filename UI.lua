@@ -723,7 +723,9 @@ local function BuildMini()
     border:SetSize(53, 53) border:SetPoint("TOPLEFT")
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
     mini:SetScript("OnClick", function(_, btn)
-        if IsAltKeyDown() then
+        if IsControlKeyDown() and _G.DavidIssues then
+            _G.DavidIssues.Toggle("Talentwarden")
+        elseif IsAltKeyDown() then
             OpenOptions()
         elseif btn == "RightButton" then
             -- right-click: next build for the spec you are looking at
@@ -764,6 +766,7 @@ local function BuildMini()
         GameTooltip:AddLine("Right-click: switch to the next build.", 0.85, 0.85, 0.85)
         GameTooltip:AddLine("Shift-click: say the next talent in chat.", 0.85, 0.85, 0.85)
         GameTooltip:AddLine("Alt-click: options (look, glow, chat, window).", 0.85, 0.85, 0.85)
+        GameTooltip:AddLine("Ctrl-click: issue log (what went wrong, if anything).", 0.85, 0.85, 0.85)
         GameTooltip:AddLine("Drag: move this button.", 0.85, 0.85, 0.85)
         GameTooltip:Show()
     end)
