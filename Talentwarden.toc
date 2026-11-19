@@ -4,6 +4,8 @@
 ## Author: David
 ## Version: @project-version@
 ## X-License: MIT
+## X-Curse-Project-ID: 1815723
+## X-Wago-ID: XKqEXdKy
 ## Category: Character
 ## IconTexture: Interface\AddOns\Talentwarden\Media\Icon
 ## AddonCompartmentFunc: Talentwarden_OnAddonCompartmentClick
