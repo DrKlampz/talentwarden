@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.9
+
+- Redrawn anarchy symbol with a hand-brushed, worn look
+
 ## v0.2.8
 
 - New background symbols: sword, crossed swords, shield, sun and paw print
