@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.8
+
+- New background symbols: sword, crossed swords, shield, sun and paw print
+- The background symbol can now be rotated and mirrored
+
 ## v0.2.7
 
 - New background symbols: Celtic cross, anarchy, peace sign, skull and crossbones, radiation, atom, infinity, lightning bolt, anchor, Helm of Awe, valknut, Eye of Providence, triskele and fleur-de-lis
