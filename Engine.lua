@@ -322,25 +322,32 @@ function E.ReadOwned()
         if not info or not info.treeIDs then return end
         owned.treeIDs = info.treeIDs
         owned.ok = true
-        for _, treeID in ipairs(info.treeIDs) do
+        owned.meta = {}
+        for treeIdx, treeID in ipairs(info.treeIDs) do
             for _, nodeID in ipairs(C_Traits.GetTreeNodes(treeID) or {}) do
                 local node = C_Traits.GetNodeInfo(configID, nodeID)
                 local rank = node and (node.ranksPurchased or node.currentRank or 0)
-                if rank and not IsSecret(rank) and rank > 0 then
+                if node and rank and not IsSecret(rank) then
                     local entryID = (node.activeEntry and node.activeEntry.entryID) or (node.entryIDs and node.entryIDs[1])
                     local entry = entryID and C_Traits.GetEntryInfo(configID, entryID)
                     local def = entry and entry.definitionID and C_Traits.GetDefinitionInfo(entry.definitionID)
                     local spellID = def and def.spellID
                     if spellID and not IsSecret(spellID) then
-                        owned.byID[spellID] = rank
                         local name = SpellName(spellID)
-                        if name then
-                            owned.byName[Norm(name)] = rank
-                            owned.names[Norm(name)] = name
-                            local py, px = tonumber(node.posY), tonumber(node.posX)
-                            if py and px and not IsSecret(py) and not IsSecret(px) then owned.pos[Norm(name)] = py * 100000 + px end
+                        local py, px = tonumber(node.posY), tonumber(node.posX)
+                        if name and py and px and not IsSecret(py) and not IsSecret(px) then
+                            -- where every talent sits (its row), so the order of a plan can be checked
+                            owned.meta[Norm(name)] = { y = py, tree = treeIdx - 1 }
                         end
-                        owned.total = owned.total + rank
+                        if rank > 0 then
+                            owned.byID[spellID] = rank
+                            if name then
+                                owned.byName[Norm(name)] = rank
+                                owned.names[Norm(name)] = name
+                                if py and px and not IsSecret(py) and not IsSecret(px) then owned.pos[Norm(name)] = py * 100000 + px end
+                            end
+                            owned.total = owned.total + rank
+                        end
                     end
                 end
             end
@@ -428,11 +435,64 @@ end
 ---------------------------------------------------------------------------
 -- Walks the plan: for each step, how many points of that talent the plan wants by then, versus what you have.
 -- Returns the full list of rows (with done flags), the next step, and the talents that are off the plan.
+-- Puts the plan in an order the game lets you follow. A talent in a lower row needs 5 points spent in the rows above it
+-- in its own tree; when a guide lists such a talent too early, the points it is waiting for are moved ahead of it.
+-- Also numbers every point with the level you take it at (the first point is level 10). Needs the game's talent layout
+-- (owned.meta); without it the plan is returned as written.
+local legalCache = {}
+function E.Legalize(steps, owned, key)
+    local meta = owned and owned.meta
+    if not (meta and next(meta)) then return steps, 0 end
+    local sig = {}
+    for i, st in ipairs(steps) do sig[i] = st.name end
+    local ck = key .. "#" .. table.concat(sig, ",")
+    if legalCache[ck] then return legalCache[ck].steps, legalCache[ck].moved end
+    -- row number of each talent within its tree (0 = top row)
+    local ys = {}
+    for _, m in pairs(meta) do
+        ys[m.tree] = ys[m.tree] or {}
+        ys[m.tree][m.y] = true
+    end
+    local rowOf = {}
+    for tree, set in pairs(ys) do
+        local list = {}
+        for y in pairs(set) do list[#list + 1] = y end
+        table.sort(list)
+        local idx = {}
+        for i, y in ipairs(list) do idx[y] = i - 1 end
+        rowOf[tree] = idx
+    end
+    local function Row(st)
+        local m = meta[Norm(st.name)]
+        return m and rowOf[m.tree] and rowOf[m.tree][m.y], m and m.tree
+    end
+    for _, st in ipairs(steps) do if not Row(st) then return steps, 0 end end   -- a talent the game does not know: leave it
+    local left, out, spent, moved = {}, {}, {}, 0
+    for i, st in ipairs(steps) do left[i] = st end
+    while #left > 0 do
+        local pick
+        for i, st in ipairs(left) do
+            local row, tree = Row(st)
+            if (spent[tree] or 0) >= row * 5 then pick = i break end
+        end
+        if not pick then pick = 1 end   -- nothing fits: keep the guide's own order
+        if pick ~= 1 then moved = moved + 1 end
+        local st = table.remove(left, pick)
+        local _, tree = Row(st)
+        spent[tree] = (spent[tree] or 0) + 1
+        out[#out + 1] = { tree = st.tree, name = st.name, spell = st.spell, lvl = 9 + #out + 1 }
+    end
+    legalCache[ck] = { steps = out, moved = moved }
+    return out, moved
+end
+
 function E.Evaluate(spec, build, owned)
     owned = owned or E.ReadOwned()
     local foreign = not E.IsOwnClass(ns.Data[spec] and ns.Data[spec].class)
     if foreign then owned = { byID = {}, byName = {}, names = {}, pos = {}, total = 0, ok = false } end
     local steps = E.Plan(spec, build)
+    local moved = 0
+    if not foreign then steps, moved = E.Legalize(steps, owned, tostring(spec) .. "/" .. tostring(build)) end
     local need, rows, nextRow = {}, {}, nil
     local planTotal = {}
     for i, s in ipairs(steps) do
@@ -478,7 +538,7 @@ function E.Evaluate(spec, build, owned)
         o.name = o.name or o.key
     end
     table.sort(off, function(a, b) return a.name < b.name end)
-    return { rows = rows, next = nextRow, off = off, owned = owned, spec = spec, build = build, total = #steps, foreign = foreign }
+    return { rows = rows, next = nextRow, off = off, owned = owned, spec = spec, build = build, total = #steps, foreign = foreign, moved = moved }
 end
 
 -- one-line summary for chat
@@ -501,6 +561,23 @@ function E.Upcoming(res, n)
                 out[#out + 1] = { step = row.step, order = #out + 1, row = row }
                 if #out >= n then break end
             end
+        end
+    end
+    return out
+end
+
+-- the talents to take with the points you can spend now: each row is one point, grouped by talent, in order
+function E.UpcomingPoints(res, points)
+    local out, byKey, left = {}, {}, math.max(1, points or 1)
+    if not res or res.foreign then return out end
+    for _, row in ipairs(res.rows) do
+        if not row.done then
+            if left <= 0 then break end
+            local k = E.Norm(row.step.name)
+            local w = byKey[k]
+            if not w then w = { step = row.step, order = #out + 1, row = row, pts = 0 } byKey[k] = w out[#out + 1] = w end
+            w.pts = w.pts + 1
+            left = left - 1
         end
     end
     return out

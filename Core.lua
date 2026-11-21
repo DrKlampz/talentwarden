@@ -20,7 +20,7 @@ ns.DEFAULTS = {
     glowSize = 1.5,
     glowPulse = true,
     glowSpeed = 0.7,        -- seconds for one pulse
-    glowCount = 1,          -- how many of the next talents glow
+    glowCount = "auto",     -- how many of the next talents glow ("auto" = as many as you have points to spend)
     glowOnlyUnspent = false, -- only glow while you have a point to spend
     glowAllOnReset = true,  -- with every talent reset, glow the whole plan and number each talent with the points it should get
     glowNumbers = false,    -- put the step order on the glowing talents (1 = next, 2 = after that, ...)
@@ -124,6 +124,8 @@ f:SetScript("OnEvent", function(_, event, arg)
     if event == "ADDON_LOADED" and arg == ADDON_NAME then
         TalentwardenDB = TalentwardenDB or {}
         ns.db = Merge(TalentwardenDB, ns.DEFAULTS)
+        -- the glow used to default to one talent; it now follows your unspent points
+        if not TalentwardenDB.glowAutoSet then TalentwardenDB.glowAutoSet = true TalentwardenDB.glowCount = "auto" end
         for k in pairs(PERCHAR) do
             if TalentwardenDB.perCharMoved then rawset(TalentwardenDB, k, nil) end
         end

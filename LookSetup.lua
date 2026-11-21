@@ -18,7 +18,7 @@ local function Options()
             L.Slider("Glow size", db, "glowSize", 1, 2.5, 0.1, nil, refresh),
             L.Kon("Pulse", db, "glowPulse", refresh),
             L.Slider("Pulse speed (seconds)", db, "glowSpeed", 0.3, 1.6, 0.1, nil, refresh),
-            L.Choice("Glow this many of the next talents", db, "glowCount", { { 1, "Just the next one" }, { 2, "The next 2" }, { 3, "The next 3" }, { 5, "The next 5" }, { 8, "The next 8" } }, refresh),
+            L.Choice("Glow this many of the next talents", db, "glowCount", { { "auto", "As many as I have points to spend" }, { 1, "Just the next one" }, { 2, "The next 2" }, { 3, "The next 3" }, { 5, "The next 5" }, { 8, "The next 8" } }, refresh),
             L.Kon("After a reset, glow every planned talent with its point count", db, "glowAllOnReset", refresh),
             L.Koff("Number the glowing talents (1 = first)", db, "glowNumbers", refresh),
             L.Koff("Only glow while I have a point to spend", db, "glowOnlyUnspent", refresh),

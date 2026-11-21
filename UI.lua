@@ -171,7 +171,14 @@ function UI.Highlight()
     local res = UI.Current()
     if not res or res.foreign then return end
     if ns.db.glowOnlyUnspent and (res.unspent or 0) <= 0 then return end
-    local want = E.Upcoming(res, math.max(1, math.floor(ns.db.glowCount or 1)))
+    local gc = ns.db.glowCount
+    local want
+    if gc == nil or gc == "auto" then
+        -- as many talents as you have points to spend (at least the next one)
+        want = E.UpcomingPoints(res, tonumber(res.unspent) or 0)
+    else
+        want = E.Upcoming(res, math.max(1, math.floor(tonumber(gc) or 1)))
+    end
     -- everything reset: glow the whole plan (as many points as you can spend) and show how many points each talent gets
     local overview = false
     if ns.db.glowAllOnReset ~= false and res.owned and res.owned.ok and (res.owned.total or 0) == 0 then

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.11
+
+- The talents to take now follow the points you can spend: with 3 unspent points, the next 3 points glow (it used to be a fixed count). You can still pick a fixed number in the options.
+- Plans are put in an order the game lets you follow: a talent that needs 5 points in the rows above it is no longer suggested before those points. Every point now shows the level you take it at.
+
 ## v0.2.10
 
 - Each character now keeps its own spec guide and chosen build. Before, two characters of the same class shared them. Your options, looks and own custom builds are still shared. What you had set up before goes to the first character that plays.
