@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.10
+
+- Each character now keeps its own spec guide and chosen build. Before, two characters of the same class shared them. Your options, looks and own custom builds are still shared. What you had set up before goes to the first character that plays.
+
 ## v0.2.9
 
 - Redrawn anarchy symbol with a hand-brushed, worn look
